@@ -66,8 +66,37 @@ Adding color...
 
 ```{r}
 ggplot(weather_df, aes(x = tmin, y = tmax)) + 
-  geom_point(aes(color = name))
+  geom_point(aes(color = name), alpha = 0.4)
 ##
 ## Adding color into the different points, each color represents a different name (weather station location)
+## Alpha = 0.4 adds transparency to data points
 ```
+
+## Adding line through the data (smooth, curvy best line), se= FALSE turns error bars off
+* First
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) +
+  geom_smooth(se = FALSE)
+```
+* vs, not defining all aesthetic mappings for everything (all three variables), color matters in geom_point but not in geom_smooth
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE)
+##
+## Gives you smooth lines for each variable (one for each location of weather temps)
+```
+
+## Want to turn one panel plot into three panel plot, one plot for each weather station
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  facet_grid(. ~ name)
+##
+## Facets break out your plot by the variable you specify (here, you break out by name)
+##
+```
+
 
