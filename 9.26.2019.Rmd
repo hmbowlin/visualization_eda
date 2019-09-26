@@ -29,8 +29,45 @@ weather_df =
     tmax = tmax / 10) %>%
   select(name, id, everything())
 weather_df
-
+##
+## Create a ggplot, aes= aesthetic mapping we care about, without geompoint() we don't have anything on our graph
+## geompoint() at a point at each x/y variable we will put a point
+##
 ggplot(weather_df, aes(x = tmin, y = tmax)) + 
   geom_point()
+##
+## 
+```
+# Different aesthetic mapping
+```{r}
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax)) +
+  geom_point()
+##
+## Another way of making above ggplot
+
+```
+
+## Filtering by specific variable name
+```{r}
+weather_df %>% filter(name == "Central_Park_NY")
+```
+
+# saving plot with a name (plot_weather)
+```{r}
+plot_weather = 
+  weather_df %>%
+  ggplot(aes(x = tmin, y = tmax))
+
+plot_weather + geom_point()
+```
+
+Adding color... 
+
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name))
+##
+## Adding color into the different points, each color represents a different name (weather station location)
 ```
 
