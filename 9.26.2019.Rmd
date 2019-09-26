@@ -1,0 +1,15 @@
+---
+title: "9.26.2019"
+output: github_document
+---
+
+```{r}
+library(tidyverse)
+library(ggridges)
+##
+##Attaching package: 'ggridges'
+## The following object is masked from 'package:ggplot2':
+##
+##    scale_discrete_manual
+```
+
