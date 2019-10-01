@@ -225,3 +225,201 @@ weather_df %>%
   geom_point(alpha = .4) +
   geom_smooth(se = FALSE)
 ```
+ 
+## 10/1/2019 Notes
+```{r}
+weather_df %>%
+  ggplot(aes(x = tmin, y = tmax, color = name)) +
+  geom_point(alpha = .4)
+```
+
+## Adding labels to the ggplot
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  )
+```
+## Playing with the scales
+```{r} 
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package") + 
+  scale_x_continuous(
+    breaks = c(-15, 0, 15), 
+    labels = c("-15º C", "0", "15"))
+
+## This scales your axes 
+```
+# Transformation
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package") + 
+  scale_x_continuous(
+    breaks = c(-15, 0, 15), 
+    labels = c("-15º C", "0", "15"),
+    limits = c(-20, 30)
+)+ 
+  scale_y_continuous(
+    trans = "sqrt", 
+    position = "right")
+##Transforms your data with a squareroot to your scale
+```
+#Colors
+```{r}
+weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package") + 
+  scale_color_hue(name = "Location", h = c(100, 300))
+
+## scale_color_hue (many different options, can play around, not recommended)
+```
+
+## Viridis package, solves very specific problem in tidyverse
+* ggplot colors aren't great so this solves this (better color palates)
+* more distinct colors, light to dark
+```{r}
+ggp_base = 
+  weather_df %>% 
+  ggplot(aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) + 
+  labs(
+    title = "Temperature plot",
+    x = "Minimum daily temperature (C)",
+    y = "Maxiumum daily temperature (C)",
+    caption = "Data from the rnoaa package"
+  ) + 
+  viridis::scale_color_viridis(
+    name = "Location", 
+    discrete = TRUE
+  )
+
+ggp_base
+
+## Discrete = TRUE bc variable is discrete
+```
+#changing other fun things to ggp_base
+#scales = how axes demonstrate specific mapping, now we do themes, global things that describe what plot looks like, general behavior and look of plot
+```{r}
+#legend position
+ggp_base +
+  theme_bw() +
+  theme(legend.position = "bottom") 
+
+  #take legend out completely = legend.position = "none"
+  #Order really matters
+#theme_minimal() makes it all minimal
+```
+# changing geom line to connect the dots
+```{r}
+central_park = 
+  weather_df %>% 
+  filter(name == "CentralPark_NY")
+
+waikiki = 
+  weather_df %>% 
+  filter(name == "Waikiki_HA")
+
+ggplot(data = waikiki, aes(x = date, y = tmax, color = name)) + 
+  geom_point() + 
+  geom_line(data = central_park)
+```
+# This gives you a color to the name
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax)) + 
+  geom_point(aes(color = name), alpha = .5) +
+  geom_smooth(se = FALSE)
+```
+
+# Multi panel plots
+#Faceting gives you a fair distance in creating plots (multiple panels of plots)
+```{r}
+ggplot(weather_df, aes(x = tmin, y = tmax, color = name)) + 
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  facet_grid(. ~ name)
+
+ggp_box = weather_df %>%
+  ggplot(aes(x = name, y = tmax)) +
+  geom_boxplot()
+```
+```{r}
+devtools::install_github("thomasp85/patchwork") 
+1
+```
+```{r}
+tmax_tmin_p = 
+  weather_df %>% 
+  ggplot(aes(x = tmax, y = tmin, color = name)) + 
+  geom_point(alpha = .5) +
+  theme(legend.position = "none")
+
+prcp_dens_p = 
+  weather_df %>% 
+  filter(prcp > 0) %>% 
+  ggplot(aes(x = prcp, fill = name)) + 
+  geom_density(alpha = .5) + 
+  theme(legend.position = "none")
+
+tmax_date_p = 
+  weather_df %>% 
+  ggplot(aes(x = date, y = tmax, color = name)) + 
+  geom_point(alpha = .5) +
+  geom_smooth(se = FALSE) + 
+  theme(legend.position = "bottom")
+
+(tmax_tmin_p + prcp_dens_p) / tmax_date_p
+```
+
+```{r}
+weather_df %>%
+  mutate(name = forcats::fct_relevel(name, c("Waikiki_HA", "CentralPark_NY", "Waterhole_WA"))) %>% 
+  ggplot(aes(x = name, y = tmax)) + 
+  geom_violin(aes(fill = name), color = "blue", alpha = .5) + 
+  theme(legend.position = "bottom")
+```
+ #reorder 
+```{r}
+weather_df %>%
+  mutate(
+    name = factor(name),
+    name = fct_reorder(name, tmax)
+  ) %>%
+  ggplot(aes(x = name, y = tmax, color = name)) +
+  geom_boxplot()
+```
+ 
+```{r}
+weather_df %>%
+  select(name, tmax, tmin) %>% 
+  pivot_longer(
+    tmax:tmin,
+    names_to = "observation", 
+    values_to = "temp") %>% 
+  ggplot(aes(x = temp, fill = observation)) +
+  geom_density(alpha = .5) + 
+  facet_grid(~name) + 
+  viridis::scale_fill_viridis(discrete = TRUE)
+```
+ 
