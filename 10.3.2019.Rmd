@@ -189,3 +189,40 @@ weather_df %>%
     geom_point() 
 ```
 
+#window functions
+```{r}
+#rank, can use ?rank to fin dmore info, this does coldest day to hottest day, if you want hottest to coldest can do DESC
+weather_df %>%
+  group_by(name, month) %>%
+  mutate(
+    tmax_rank = min_rank(tmax)
+  ) %>%
+  filter(tmax_rank == 1)
+```
+#lags and leads
+```{r}
+#lags compare values to its previous value, day by day change in max temperature within each
+# station over the year
+weather_df %>%
+  group_by(name) %>%
+  mutate(temp_change = tmax - lag(tmax))
+```
+
+```{r}
+weather_df %>%
+  group_by(name) %>%
+  mutate(temp_change = tmax - lag(tmax)) %>%
+  summarize(temp_change_sd = sd(temp_change, na.rm = TRUE),
+            temp_change_max = max(temp_change, na.rm = TRUE))
+```
+
+```{r}
+# gives you the variability of each tmax day to day in each location (the standard deviation and how changes on average)
+weather_df %>%
+  group_by(name) %>%
+  mutate(lagged_tmax = lag(tmax),
+         one_day_tmax = tmax- lagged_tmax
+         ) %>%
+  summarize(sd_daily_change = sd(one_day_tmax, na.rm = TRUE))
+```
+
