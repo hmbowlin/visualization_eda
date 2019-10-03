@@ -150,4 +150,42 @@ weather_df %>%
     geom_point() + geom_line() + 
     theme(legend.position = "bottom")
 ```
+```{r}
+weather_df %>%
+  group_by(name, month) %>%
+  summarize(
+    mean_tmax = mean(tmax, na.rm = TRUE)
+  ) %>%
+  pivot_wider(
+    names_from = name,
+    values_from = mean_tmax
+  ) %>%
+  knitr::kable(digits = 1)
+
+# digits = 1 means you round to one digit 
+```
+
+#grouped mutates (can ungroup using "ungroup")
+```{r}
+weather_df %>%
+  group_by(name) %>%
+  mutate(centered_tmax = tmax - mean(tmax)) %>% 
+  ggplot(aes(x = date, y = centered_tmax, color = name)) + 
+    geom_point() 
+```
+```{r}
+#ungroup takes it out of groups
+weather_df %>%
+  ungroup()
+```
+
+#group and then do other operations on that df 
+```{r}
+weather_df %>%
+  group_by(name) %>%
+  mutate(mean_tmax = mean(tmax), na.rm = TRUE,
+  centered_tmax = tmax - mean_tmax) %>% 
+  ggplot(aes(x = date, y = centered_tmax, color = name)) + 
+    geom_point() 
+```
 
