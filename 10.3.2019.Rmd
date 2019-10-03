@@ -1,0 +1,153 @@
+---
+title: "10.3.2019"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+
+library(tidyverse)
+library(viridis)
+knitr::opts_chunk$set(echo = TRUE)
+
+options(ggplot2.continuous.colour = "viridis",
+        ggplot2.continuous.fill = "viridis"
+        )
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+
+
+```
+
+```{r load_data, cache = TRUE}
+# Bringing in the dataset again, lubridate = package we don't really need so thats why we use two ::
+weather_df = 
+  rnoaa::meteo_pull_monitors(c("USW00094728", "USC00519397", "USS0023B17S"),
+                      var = c("PRCP", "TMIN", "TMAX"), 
+                      date_min = "2017-01-01",
+                      date_max = "2017-12-31") %>%
+  mutate(
+    name = recode(id, USW00094728 = "CentralPark_NY", 
+                      USC00519397 = "Waikiki_HA",
+                      USS0023B17S = "Waterhole_WA"),
+    tmin = tmin / 10,
+    tmax = tmax / 10,
+    month = lubridate::floor_date(date, unit = "month")) %>%
+  select(name, id, date, month, everything())
+```
+```{r}
+# Grouping by name and month, haven't fundamentally alter the weather_df dataset, just temporarily change how it looks
+weather_df %>%
+  group_by(name, month)
+```
+
+```{r}
+#Counting the number of things that exist in these groups
+weather_df %>%
+  group_by(month) %>%
+  summarize(n_obs = n())
+#Gives the count of weather observations per month
+```
+```{r}
+# number of observations for each month and as a unique date
+weather_df %>%
+  group_by(month) %>%
+  summarize(n = n(),
+            n_unique = n_distinct(date))
+```
+
+```{r}
+#number of unique obs in each name (NY, HA, and WA)
+weather_df %>%
+  count(name)
+
+#number of unique obs per month
+weather_df %>%
+  count(month)
+
+#number of unique obs per month
+weather_df %>%
+  count(name, month)
+```
+
+```{r}
+weather_df %>%
+  count(month, name = "n_days")
+```
+```{r}
+# don't use base r "table" becaue you have to pull the data, does the same thing, but much less 
+# pretty and not a data frame so can't do anything else after 
+weather_df %>%
+  pull(month) %>% 
+  table
+```
+```{r}
+weather_df %>%
+  group_by(month) %>%
+  summarize(
+    n_obs = n(),
+    n_days = n_distinct(date))
+```
+```{r}
+# creating a table for "cold" and "not cold", coding it into binary variables
+# TRUE  ~" is the case when, so if there's a blank spot you skip it
+weather_df %>% 
+  mutate(
+    cold = case_when(
+      tmax < 5 ~ "cold",
+      tmax >=5 ~ "not_cold",
+      TRUE     ~ ""
+  )) %>%
+  filter(name != "Waikiki_HA") %>% 
+  group_by(name, cold) %>% 
+  summarize(count = n()) 
+```
+
+Let's make a nice table
+```{r}
+weather_df %>%
+  count(name) %>%
+  knitr::kable()
+```
+
+```{r}
+weather_df %>% 
+  mutate(
+    cold = case_when(
+      tmax < 5 ~ "cold",
+      tmax >=5 ~ "not_cold",
+      TRUE     ~ ""
+  )) %>%
+  janitor::tabyl(name, cold)
+#tabyl in janitor package also makes nice table
+```
+
+```{r}
+#putting in values from different variables (median, mean, sd, for tmax and prec)
+weather_df %>%
+  group_by(month) %>%
+  summarize(
+    mean_tmax = mean(tmax),
+    mean_prec = mean(prcp, na.rm = TRUE),
+    median_tmax = median(tmax),
+    sd_tmax = sd(tmax))
+```
+
+```{r}
+weather_df %>%
+  group_by(name, month) %>%
+  summarize(
+    mean_tmax = mean(tmax),
+    median_tmax = median(tmax))
+```
+
+```{r}
+#Visual summary of the data frame we just made
+weather_df %>%
+  group_by(name, month) %>%
+  summarize(mean_tmax = mean(tmax)) %>%
+  ggplot(aes(x = month, y = mean_tmax, color = name)) + 
+    geom_point() + geom_line() + 
+    theme(legend.position = "bottom")
+```
+
